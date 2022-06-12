@@ -7,10 +7,12 @@ public class B_Tree {
     // Node class Definition
     public class Node {
 
-        int[] key = new int[m-1] ;
+        int[] key = new int[m] ;
         Node[] child = new Node [m] ;
-        int n ; // keys number
-        boolean leaf ; // the node has children or not ? it has -> isn't leaf
+        int n = 0; // keys number
+        boolean leaf = false ; // the node has children or not ? it has -> isn't leaf
+
+
     }
 
 
@@ -30,7 +32,7 @@ public class B_Tree {
         }
     }
 
-    public void insert(int insert_key){
+    public void insert(int key_Value){
         Node root_copy = root ;
         if (root.n == m-1){
             //make a new root node
@@ -39,43 +41,38 @@ public class B_Tree {
             new_root.n = 0 ;
             new_root.leaf = false ;
             new_root.child[0] = root_copy ;
-            split(new_root , 0 , root_copy );
-            insert_node(new_root , insert_key);
-
+            split(new_root , root_copy);
         }
         else{
             //root node remain constant
-            insert_node(root, insert_key);
+            insert_node(root, key_Value);
         }
     }
 
-    public void insert_node(Node node , int key_value ){
+    public void insert_node(Node parent, Node node , int key_value ){
         //find the node we want to put key in it
+        int key_Value_index ;
+        for(key_Value_index = 0 ; node.key[key_Value_index] < key_value ; key_Value_index++);
 
         if (node.leaf) {
-
             if (node.n == m - 1) {
                 // insert in full node
-                int i;
-                for(i = 0 ; node.key[i] < key_value ; i++);
-                split();
+                split(parent, node, key_value);
             } else {
                 // insert in non full node
-                int i ;
-                for(i = 0 ; node.key[i] < key_value ; i++);
-                shift_right(i, node.key, node.n);
-                node.key[i] = key_value ;
+
+                shift_right(key_Value_index, node.key, node.n);
+                node.key[key_Value_index] = key_value ;
             }
         }else{
             // find the suitable child node for key value
-            int i ;
-            for(i = 0 ; node.key[i] < key_value ; i++);
-            insert_node(node.child[i] , key_value);
+            insert_node(node, node.child[key_Value_index], key_value);
         }
     }
 
 
-    public void split (Node parent ,int index_in_parent ,Node child){
+    public void split (Node parent ,Node child , int new_key_value){
+
 
     }
 
