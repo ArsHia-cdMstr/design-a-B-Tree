@@ -7,6 +7,8 @@ public class B_Tree {
     // Node class Definition
     public class Node {
 
+
+        Node parent = null ; // parent of this node
         int[] key = new int[m] ;
         Node[] child = new Node [m] ;
         int n = 0; // keys number
@@ -32,20 +34,30 @@ public class B_Tree {
         }
     }
 
+
+    public Node make_new_rootNode(Node root_copy){
+        Node new_root = new Node();
+        root = new_root ;
+        new_root.n = 0 ;
+        new_root.leaf = false ;
+        new_root.child[0] = root_copy ;
+        root_copy.parent = new_root ;
+
+        return new_root;
+    }
+
+
     public void insert(int key_Value){
         Node root_copy = root ;
         if (root.n == m-1){
             //make a new root node
-            Node new_root = new Node();
-            root = new_root ;
-            new_root.n = 0 ;
-            new_root.leaf = false ;
-            new_root.child[0] = root_copy ;
-            split(new_root , root_copy);
+            Node new_root = make_new_rootNode(root_copy);
+            split_key(new_root, root_copy, key_Value);
         }
         else{
             //root node remain constant
-            insert_node(root, key_Value);
+            //root isn't full so it won't split so it doesn't matter what we give to insert_node func as (Node Parent)
+            insert_node(root, root, key_Value);
         }
     }
 
@@ -57,7 +69,7 @@ public class B_Tree {
         if (node.leaf) {
             if (node.n == m - 1) {
                 // insert in full node
-                split(parent, node, key_value);
+                split_key(parent, node, key_value);
             } else {
                 // insert in non full node
 
@@ -70,14 +82,54 @@ public class B_Tree {
         }
     }
 
+    public void split_key(Node parent ,Node child , int new_key_value){
+        // insert key value
+        int key_Value_index;
+        for (key_Value_index = 0; child.key[key_Value_index] < new_key_value; key_Value_index++) ;
 
-    public void split (Node parent ,Node child , int new_key_value){
+        shift_right(key_Value_index, child.key, child.n);
+        child.key[key_Value_index] = new_key_value;
+        child.n += 1 ;
 
+        // split
+        split(parent, child) ;
+
+        // check the parent classifying
+        if (parent.n == m){
+            if (parent.parent != null){
+                split(parent.parent , parent);
+            }else{
+                // make a new root node
+                Node root_copy = root ;
+                Node new_root = make_new_rootNode(root_copy);
+                split(new_root , root_copy);
+            }
+        }
 
     }
 
+    //just splitting
+    public void split (Node parent ,Node child) {
+        Node new_child_node = new Node();
+        //manage child and keys
+        int t = m/2 + 1 ;
+        int i ;
+        for ( i = t ; i < child.n ; i++) {
+            new_child_node.key[i - t] = child.key[i];
+            new_child_node.child[i-t] = child.child[i];
+        }
+        new_child_node.child[i-t] = child.child[i];
+        // manage n and leaf and parent
+        new_child_node.n = t-1 ;
+        child.n = t-1 ;
+        new_child_node.leaf = child.leaf;
+        new_child_node.parent = parent;
 
-
-
+        // insert the middle key in child node in parent keys
+        int j ;
+        for ( j = 0; parent.key[j] < child.key[t]; j++ );
+        parent.key[j-1] = child.key[t];
+        parent.n += 1 ;
+    }
 
 }
